@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="logo">
+          <div class="logo-mark">NJ</div>
+          <div class="logo-text">
+            <div class="logo-text-main">NO JARDIM</div>
+            <div class="logo-text-sub">resto bar</div>
+          </div>
+        </div>
+        <button class="btn-primary no-print" type="button">
+          Controle de horas
+        </button>
+      </div>
+
+      <div class="card">
+        <h1>Ficha de Ponto / Calculadora de Horas</h1>
+        <div class="subtitle">
+          Registre as horas trabalhadas, calcule horas extras e o valor a
+          receber.
+        </div>
+
+        <!-- CABEÇALHO / SEMANA -->
+        <div class="row">
+          <div class="field">
+            <label for="nome">Funcionário</label>
+            <input type="text" id="nome" placeholder="Ex: Gerson Silva" />
+          </div>
+
+          <div class="field small-input">
+            <label for="valorHora">Valor da hora (R$)</label>
+            <input type="text" id="valorHora" placeholder="Ex: 21,00" />
+          </div>
+
+          <div class="field small-input">
+            <label for="dataInicio">Início da semana</label>
+            <input type="date" id="dataInicio" />
+          </div>
+
+          <div class="field small-input">
+            <label for="dataFim">Fim da semana</label>
+            <input type="date" id="dataFim" />
+          </div>
+        </div>
+
+        <!-- TABELA SEMANAL -->
+        <table id="tabela">
+          <thead>
+            <tr>
+              <th style="text-align: left; padding-left: 10px">Dia</th>
+              <th>Início</th>
+              <th>Início intervalo</th>
+              <th>Fim intervalo</th>
+              <th>Fim</th>
+              <th>Total (h)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- linhas criadas no JS -->
+          </tbody>
+          <tfoot>
+            <tr class="tfoot-row">
+              <td colspan="5" style="text-align: right; padding-right: 10px">
+                Total de horas:
+              </td>
+              <td id="totalHorasSemana">0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="total-info">
+          <div>
+            <span class="badge">
+              ⏱ Horas extras:
+              <span id="horasExtrasBadge">0.00</span>
+              h
+            </span>
+          </div>
+          <div>
+            <strong id="nomeResumo"></strong>
+          </div>
+        </div>
+
+        <div class="buttons-row no-print">
+          <button class="btn-secondary" type="button" id="btnReiniciar">
+            Reiniciar
+          </button>
+          <button class="btn-primary" type="button" id="btnCalcular">
+            Calcular
+          </button>
+        </div>
+
+        <!-- OPCÕES AVANÇADAS -->
+        <div class="advanced-toggle no-print" id="toggleAvancado">
+          <input type="checkbox" id="chkMostrarAvancado" />
+          <label for="chkMostrarAvancado">Opções avançadas</label>
+        </div>
+
+        <div class="advanced-panel no-print" id="painelAvancado">
+          <div class="row">
+            <div class="field small-input">
+              <label for="horasSemanaBase">Jornada semanal (h)</label>
+              <input
+                type="number"
+                id="horasSemanaBase"
+                step="0.01"
+                value="44"
+              />
+            </div>
+            <div class="field small-input">
+              <label for="multiplicadorExtra">Multiplicador hora extra</label>
+              <input
+                type="number"
+                id="multiplicadorExtra"
+                step="0.01"
+                value="1.5"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="checkbox-line">
+              <input type="checkbox" id="chkCalcularPagamento" checked />
+              <label for="chkCalcularPagamento">Calcular pagamento</label>
+            </div>
+          </div>
+
+          <div class="pay-summary" id="resumoPagamento"></div>
+          <div class="error" id="erroMensagem"></div>
+        </div>
+
+        <!-- RESUMO MENSAL -->
+        <hr style="margin: 18px 0" />
+        <h2 class="section-title">Resumo Mensal</h2>
+        <div class="subtitle" style="margin-bottom: 10px">
+          Após calcular uma semana, clique em
+          <strong>Adicionar semana ao mês</strong>
+          para montar o total mensal.
+        </div>
+
+        <div class="row">
+          <div class="field small-input">
+            <label for="mesReferencia">Mês de referência</label>
+            <input type="month" id="mesReferencia" />
+          </div>
+          <div class="field no-print" style="flex: 0 0 auto; margin-top: 18px">
+            <button class="btn-secondary" type="button" id="btnAdicionarMes">
+              Adicionar semana ao mês
+            </button>
+          </div>
+          <div class="field no-print" style="flex: 0 0 auto; margin-top: 18px">
+            <button class="btn-secondary" type="button" id="btnLimparMes">
+              Limpar mês
+            </button>
+          </div>
+          <div class="field no-print" style="flex: 0 0 auto; margin-top: 18px">
+            <button class="btn-secondary" type="button" id="btnExportarCSV">
+              Exportar CSV
+            </button>
+          </div>
+          <div class="field no-print" style="flex: 0 0 auto; margin-top: 18px">
+            <button class="btn-secondary" type="button" id="btnImprimir">
+              Imprimir
+            </button>
+          </div>
+        </div>
+
+        <table id="tabelaMensal">
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Período</th>
+              <th>Horas totais</th>
+              <th>Horas extras</th>
+              <th>Pagamento</th>
+              <th class="no-print">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- linhas semanais do mês -->
+          </tbody>
+          <tfoot>
+            <tr class="tfoot-row">
+              <td colspan="2" style="text-align: right; padding-right: 10px">
+                Total no mês:
+              </td>
+              <td id="totalHorasMes">0.00</td>
+              <td id="totalExtrasMes">0.00</td>
+              <td id="totalPagamentoMes">-</td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="pay-summary" id="resumoMensalTexto"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
