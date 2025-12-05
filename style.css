@@ -22,6 +22,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18px;
+  gap: 8px;
 }
 
 /* ====== LOGO NO JARDIM ====== */
@@ -77,6 +78,7 @@ body {
   cursor: pointer;
   font-size: 14px;
   box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+  white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -125,7 +127,8 @@ h1 {
 }
 
 .small-input {
-  width: 140px;
+  width: 160px;
+  max-width: 100%;
 }
 
 label {
@@ -143,6 +146,7 @@ input[type="month"] {
   border: 1px solid #d1d5db;
   padding: 6px 10px;
   font-size: 13px;
+  width: 100%;
 }
 
 input:focus {
@@ -151,11 +155,17 @@ input:focus {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
 }
 
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
   margin: 10px 0 4px;
   font-size: 13px;
+  min-width: 600px;
 }
 
 thead {
@@ -212,6 +222,7 @@ tbody tr:nth-child(even) {
   font-size: 13px;
   font-weight: 500;
   color: #374151;
+  white-space: nowrap;
 }
 
 .btn-secondary:hover {
@@ -300,16 +311,113 @@ tbody tr:nth-child(even) {
 }
 
 @media (max-width: 700px) {
+  body {
+    padding: 10px;
+  }
+  .app {
+    max-width: 100%;
+  }
+  .card {
+    padding: 14px;
+    border-radius: 10px;
+  }
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .logo-text-main {
+    font-size: 16px;
+    letter-spacing: 0.18em;
+  }
+  h1 {
+    font-size: 18px;
+  }
+  .subtitle {
+    font-size: 12px;
+  }
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
   .field {
-    min-width: 140px;
+    min-width: 100%;
+  }
+  .small-input {
+    width: 100%;
+  }
+  .buttons-row {
+    justify-content: flex-start;
   }
   table {
     font-size: 12px;
+    min-width: 500px;
   }
   th,
   td {
-    padding: 6px 4px;
+    padding: 5px 4px;
   }
+}
+
+/* ====== CONTAINER DO PDF RESUMIDO ====== */
+#pdfContainer {
+  display: none;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 12px;
+  color: #111827;
+}
+
+#pdfHeader {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+#pdfHeader h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+#pdfHeader h2 {
+  margin: 2px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: lowercase;
+  font-weight: 400;
+}
+
+#pdfInfo {
+  margin: 6px 0 10px;
+  font-size: 12px;
+}
+
+#pdfInfo span {
+  display: inline-block;
+  margin-right: 16px;
+}
+
+#pdfContainer table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+#pdfContainer th,
+#pdfContainer td {
+  border: 1px solid #e5e7eb;
+  padding: 4px 5px;
+  text-align: center;
+}
+
+#pdfContainer thead {
+  background: #e5e7eb;
+}
+
+#pdfResumoTotais {
+  margin-top: 8px;
+  font-size: 12px;
 }
 
 /* ====== LAYOUT DE IMPRESSÃO (A4 FICHA DE PONTO) ====== */
@@ -357,4 +465,27 @@ tbody tr:nth-child(even) {
   .tfoot-row td {
     background: #e5e7eb !important;
   }
+
+  /* modo PDF resumido: só mostra o container do PDF */
+  body.modo-pdf .app {
+    display: none !important;
+  }
+
+  body.modo-pdf #pdfContainer {
+    display: block !important;
+  }
+}
+
+/* Na tela: quando modo-pdf, esconde app e mostra pdfContainer */
+body.modo-pdf {
+  background: #ffffff;
+  padding: 24px;
+}
+
+body.modo-pdf .app {
+  display: none;
+}
+
+body.modo-pdf #pdfContainer {
+  display: block;
 }

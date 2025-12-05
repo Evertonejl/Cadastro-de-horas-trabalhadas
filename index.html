@@ -10,14 +10,14 @@
     <div class="app">
       <div class="topbar">
         <div class="logo">
-          <div class="logo-mark">NJ</div>
+          <div class="logo-mark">EJF</div>
           <div class="logo-text">
-            <div class="logo-text-main">NO JARDIM</div>
-            <div class="logo-text-sub">resto bar</div>
+            <div class="logo-text-main">EJF sistemas</div>
+            <div class="logo-text-sub">joão 3:16</div>
           </div>
         </div>
         <button class="btn-primary no-print" type="button">
-          Controle de horas
+          No jardim restô bar
         </button>
       </div>
 
@@ -52,29 +52,31 @@
         </div>
 
         <!-- TABELA SEMANAL -->
-        <table id="tabela">
-          <thead>
-            <tr>
-              <th style="text-align: left; padding-left: 10px">Dia</th>
-              <th>Início</th>
-              <th>Início intervalo</th>
-              <th>Fim intervalo</th>
-              <th>Fim</th>
-              <th>Total (h)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- linhas criadas no JS -->
-          </tbody>
-          <tfoot>
-            <tr class="tfoot-row">
-              <td colspan="5" style="text-align: right; padding-right: 10px">
-                Total de horas:
-              </td>
-              <td id="totalHorasSemana">0.00</td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="table-wrapper">
+          <table id="tabela">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding-left: 10px">Dia</th>
+                <th>Início</th>
+                <th>Início intervalo</th>
+                <th>Fim intervalo</th>
+                <th>Fim</th>
+                <th>Total (h)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- linhas criadas no JS -->
+            </tbody>
+            <tfoot>
+              <tr class="tfoot-row">
+                <td colspan="5" style="text-align: right; padding-right: 10px">
+                  Total de horas:
+                </td>
+                <td id="totalHorasSemana">0.00</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
         <div class="total-info">
           <div>
@@ -167,42 +169,52 @@
             </button>
           </div>
           <div class="field no-print" style="flex: 0 0 auto; margin-top: 18px">
+            <button class="btn-secondary" type="button" id="btnPdf">
+              PDF resumido
+            </button>
+          </div>
+          <div class="field no-print" style="flex: 0 0 auto; margin-top: 18px">
             <button class="btn-secondary" type="button" id="btnImprimir">
-              Imprimir
+              Imprimir completo
             </button>
           </div>
         </div>
 
-        <table id="tabelaMensal">
-          <thead>
-            <tr>
-              <th>Semana</th>
-              <th>Período</th>
-              <th>Horas totais</th>
-              <th>Horas extras</th>
-              <th>Pagamento</th>
-              <th class="no-print">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- linhas semanais do mês -->
-          </tbody>
-          <tfoot>
-            <tr class="tfoot-row">
-              <td colspan="2" style="text-align: right; padding-right: 10px">
-                Total no mês:
-              </td>
-              <td id="totalHorasMes">0.00</td>
-              <td id="totalExtrasMes">0.00</td>
-              <td id="totalPagamentoMes">-</td>
-              <td class="no-print"></td>
-            </tr>
-          </tfoot>
-        </table>
+        <div class="table-wrapper">
+          <table id="tabelaMensal">
+            <thead>
+              <tr>
+                <th>Semana</th>
+                <th>Período</th>
+                <th>Horas totais</th>
+                <th>Horas extras</th>
+                <th>Pagamento</th>
+                <th class="no-print">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- linhas semanais do mês -->
+            </tbody>
+            <tfoot>
+              <tr class="tfoot-row">
+                <td colspan="2" style="text-align: right; padding-right: 10px">
+                  Total no mês:
+                </td>
+                <td id="totalHorasMes">0.00</td>
+                <td id="totalExtrasMes">0.00</td>
+                <td id="totalPagamentoMes">-</td>
+                <td class="no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
         <div class="pay-summary" id="resumoMensalTexto"></div>
       </div>
     </div>
+
+    <!-- CONTAINER QUE SERÁ USADO PARA O PDF RESUMIDO -->
+    <div id="pdfContainer"></div>
 
     <script src="script.js"></script>
   </body>

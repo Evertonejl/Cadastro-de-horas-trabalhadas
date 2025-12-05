@@ -445,9 +445,100 @@ document.getElementById("btnExportarCSV").addEventListener("click", () => {
   URL.revokeObjectURL(url);
 });
 
-// ======= IMPRIMIR =======
+// ======= IMPRESSÃO COMPLETA =======
 document.getElementById("btnImprimir").addEventListener("click", () => {
+  document.body.classList.remove("modo-pdf");
   window.print();
+});
+
+// ======= PDF RESUMIDO =======
+const pdfContainer = document.getElementById("pdfContainer");
+document.getElementById("btnPdf").addEventListener("click", () => {
+  calcular();
+  atualizarTabelaMensal();
+
+  let totalHoras = 0;
+  let totalExtras = 0;
+  let totalPagamento = 0;
+
+  semanasMes.forEach((sem) => {
+    totalHoras += sem.totalHoras;
+    totalExtras += sem.horasExtras;
+    if (sem.temPagamento) totalPagamento += sem.pagTotal;
+  });
+
+  const funcionario =
+    document.getElementById("nome").value.trim() || "________________";
+  const mesRef = document.getElementById("mesReferencia").value;
+  let mesFormatado = "";
+  if (mesRef) {
+    const [ano, mes] = mesRef.split("-");
+    mesFormatado = `${mes}/${ano}`;
+  }
+
+  let linhasSemanas = "";
+  if (semanasMes.length) {
+    linhasSemanas = semanasMes
+      .map(
+        (sem, idx) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>${sem.periodo || "-"}</td>
+            <td>${formatDecimal(sem.totalHoras)}</td>
+            <td>${formatDecimal(sem.horasExtras)}</td>
+            <td>${sem.temPagamento ? moedaBRL.format(sem.pagTotal) : "-"}</td>
+          </tr>`
+      )
+      .join("");
+  } else {
+    linhasSemanas = `
+          <tr>
+            <td colspan="5">Nenhuma semana adicionada.</td>
+          </tr>`;
+  }
+
+  pdfContainer.innerHTML = `
+        <div id="pdfHeader">
+          <h1>NO JARDIM</h1>
+          <h2>resto bar</h2>
+        </div>
+        <div id="pdfInfo">
+          <span><strong>Funcionário:</strong> ${funcionario}</span>
+          <span><strong>Mês ref.:</strong> ${mesFormatado || "________"}</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Período</th>
+              <th>Horas totais</th>
+              <th>Horas extras</th>
+              <th>Pagamento</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhasSemanas}
+          </tbody>
+        </table>
+
+        <div id="pdfResumoTotais">
+          <strong>Total mês:</strong>
+          ${formatDecimal(totalHoras)} h |
+          Extras: ${formatDecimal(totalExtras)} h
+          ${
+            totalPagamento > 0
+              ? `| Valor: ${moedaBRL.format(totalPagamento)}`
+              : ""
+          }
+        </div>
+      `;
+
+  document.body.classList.add("modo-pdf");
+  window.print();
+  setTimeout(() => {
+    document.body.classList.remove("modo-pdf");
+  }, 500);
 });
 
 // ======= LOCALSTORAGE (salvar / restaurar) =======
@@ -516,7 +607,6 @@ function loadState() {
   calcular();
 }
 
-// salvar sempre que qualquer input mudar
 document.querySelectorAll("input").forEach((inp) => {
   inp.addEventListener("input", () => saveState());
   inp.addEventListener("change", () => saveState());
