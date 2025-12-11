@@ -63,12 +63,13 @@ const moedaBRL = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-// ======= Cálculo principal =======
+// ======= ELEMENTOS GERAIS =======
 const totalHorasSemanaEl = document.getElementById("totalHorasSemana");
 const horasExtrasBadgeEl = document.getElementById("horasExtrasBadge");
 const nomeResumoEl = document.getElementById("nomeResumo");
 const resumoPagamentoEl = document.getElementById("resumoPagamento");
 const erroMensagemEl = document.getElementById("erroMensagem");
+const pdfContainer = document.getElementById("pdfContainer");
 
 let ultimaSemana = {
   totalHoras: 0,
@@ -80,6 +81,7 @@ let ultimaSemana = {
   temPagamento: false,
 };
 
+// ======= Cálculo principal semanal =======
 function calcular() {
   erroMensagemEl.textContent = "";
   let totalHorasSemana = 0;
@@ -451,8 +453,7 @@ document.getElementById("btnImprimir").addEventListener("click", () => {
   window.print();
 });
 
-// ======= PDF RESUMIDO =======
-const pdfContainer = document.getElementById("pdfContainer");
+// ======= PDF RESUMIDO (SEMANA/MÊS) =======
 document.getElementById("btnPdf").addEventListener("click", () => {
   calcular();
   atualizarTabelaMensal();
@@ -568,6 +569,292 @@ function saveState() {
   } catch {}
 }
 
+// ======= MODAL DIAS DO MÊS (CONTROLE DIÁRIO) =======
+const modalDiasMes = document.getElementById("modalDiasMes");
+const btnDiasMes = document.getElementById("btnDiasMes");
+const btnFecharModalDiasMes = document.getElementById("btnFecharModalDiasMes");
+const tabelaDiasMesBody = document.querySelector("#tabelaDiasMes tbody");
+const totalHorasDiasMesEl = document.getElementById("totalHorasDiasMes");
+const mesDiasReferenciaEl = document.getElementById("mesDiasReferencia");
+const valorHoraMesEl = document.getElementById("valorHoraMes");
+const nomeFuncionarioMesEl = document.getElementById("nomeFuncionarioMes");
+const btnCalcularDiasMes = document.getElementById("btnCalcularDiasMes");
+const btnLimparDiasMes = document.getElementById("btnLimparDiasMes");
+const btnPdfDiasMes = document.getElementById("btnPdfDiasMes");
+
+let diasMesAtual = 31;
+
+// abre o modal
+if (btnDiasMes) {
+  btnDiasMes.addEventListener("click", () => {
+    // copia dados da tela principal, se existirem
+    const nomePrincipal = document.getElementById("nome").value.trim();
+    if (
+      nomePrincipal &&
+      nomeFuncionarioMesEl &&
+      !nomeFuncionarioMesEl.value.trim()
+    ) {
+      nomeFuncionarioMesEl.value = nomePrincipal;
+    }
+
+    const mesRefPrincipal = document.getElementById("mesReferencia").value;
+    if (mesRefPrincipal && mesDiasReferenciaEl && !mesDiasReferenciaEl.value) {
+      mesDiasReferenciaEl.value = mesRefPrincipal;
+    }
+
+    const valorHoraPrincipal = document
+      .getElementById("valorHora")
+      .value.trim();
+    if (valorHoraPrincipal && valorHoraMesEl && !valorHoraMesEl.value.trim()) {
+      valorHoraMesEl.value = valorHoraPrincipal;
+    }
+
+    gerarTabelaDiasMes();
+    modalDiasMes.classList.add("open");
+  });
+}
+
+// fecha o modal
+if (btnFecharModalDiasMes) {
+  btnFecharModalDiasMes.addEventListener("click", () => {
+    modalDiasMes.classList.remove("open");
+  });
+}
+
+// fecha clicando fora do conteúdo (no fundo escuro)
+if (modalDiasMes) {
+  modalDiasMes.addEventListener("click", (e) => {
+    if (e.target === modalDiasMes) {
+      modalDiasMes.classList.remove("open");
+    }
+  });
+}
+
+// quando trocar o mês, ajusta quantidade de dias
+if (mesDiasReferenciaEl) {
+  mesDiasReferenciaEl.addEventListener("change", () => {
+    gerarTabelaDiasMes();
+  });
+}
+
+// gera as linhas da tabela conforme o mês escolhido
+function gerarTabelaDiasMes() {
+  if (!tabelaDiasMesBody) return;
+
+  let diasNoMes = 31;
+  const mesRef = mesDiasReferenciaEl ? mesDiasReferenciaEl.value : "";
+
+  if (mesRef) {
+    const [anoStr, mesStr] = mesRef.split("-");
+    const ano = parseInt(anoStr, 10);
+    const mes = parseInt(mesStr, 10); // 1-12
+    if (!isNaN(ano) && !isNaN(mes)) {
+      // new Date(ano, mes, 0) retorna o último dia do mês
+      diasNoMes = new Date(ano, mes, 0).getDate();
+    }
+  }
+
+  diasMesAtual = diasNoMes;
+  tabelaDiasMesBody.innerHTML = "";
+
+  for (let dia = 1; dia <= diasNoMes; dia++) {
+    const idx = dia - 1;
+    const diaLabel = String(dia).padStart(2, "0");
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="day-label">${diaLabel}</td>
+      <td><input type="time" id="inicioMes-${idx}"></td>
+      <td><input type="time" id="inicioIntMes-${idx}"></td>
+      <td><input type="time" id="fimIntMes-${idx}"></td>
+      <td><input type="time" id="fimMes-${idx}"></td>
+      <td id="totalDiaMes-${idx}">0.00</td>
+    `;
+    tabelaDiasMesBody.appendChild(tr);
+  }
+
+  if (totalHorasDiasMesEl) totalHorasDiasMesEl.textContent = "0.00";
+}
+
+// cálculo das horas por dia do mês
+function calcularDiasDoMes() {
+  if (!totalHorasDiasMesEl) return 0;
+
+  let totalHorasMes = 0;
+
+  for (let idx = 0; idx < diasMesAtual; idx++) {
+    const inicio = document.getElementById(`inicioMes-${idx}`)?.value;
+    const inicioInt = document.getElementById(`inicioIntMes-${idx}`)?.value;
+    const fimInt = document.getElementById(`fimIntMes-${idx}`)?.value;
+    const fim = document.getElementById(`fimMes-${idx}`)?.value;
+
+    let totalDiaHoras = 0;
+
+    if (inicio && fim) {
+      let inicioMin = horaParaMinutos(inicio);
+      let fimMin = horaParaMinutos(fim);
+      let inicioIntMin = inicioInt ? horaParaMinutos(inicioInt) : null;
+      let fimIntMin = fimInt ? horaParaMinutos(fimInt) : null;
+
+      if (fimMin < inicioMin) fimMin += 24 * 60;
+      if (
+        inicioIntMin !== null &&
+        fimIntMin !== null &&
+        fimIntMin < inicioIntMin
+      ) {
+        fimIntMin += 24 * 60;
+      }
+
+      const bruto = fimMin - inicioMin;
+      const intervalo =
+        inicioIntMin !== null && fimIntMin !== null
+          ? fimIntMin - inicioIntMin
+          : 0;
+
+      let liquido = bruto - intervalo;
+      if (liquido < 0) liquido = 0;
+
+      totalDiaHoras = minutosParaDecimalHoras(liquido);
+      totalHorasMes += totalDiaHoras;
+    }
+
+    const celulaTotalDia = document.getElementById(`totalDiaMes-${idx}`);
+    if (celulaTotalDia) {
+      celulaTotalDia.textContent = formatDecimal(totalDiaHoras);
+    }
+  }
+
+  totalHorasDiasMesEl.textContent = formatDecimal(totalHorasMes);
+  return totalHorasMes;
+}
+
+// botão calcular dentro do modal
+if (btnCalcularDiasMes) {
+  btnCalcularDiasMes.addEventListener("click", () => {
+    calcularDiasDoMes();
+  });
+}
+
+// botão limpar dentro do modal
+if (btnLimparDiasMes) {
+  btnLimparDiasMes.addEventListener("click", () => {
+    for (let idx = 0; idx < diasMesAtual; idx++) {
+      const campos = [
+        `inicioMes-${idx}`,
+        `inicioIntMes-${idx}`,
+        `fimIntMes-${idx}`,
+        `fimMes-${idx}`,
+      ];
+      campos.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+      const celula = document.getElementById(`totalDiaMes-${idx}`);
+      if (celula) celula.textContent = "0.00";
+    }
+    if (totalHorasDiasMesEl) totalHorasDiasMesEl.textContent = "0.00";
+  });
+}
+
+// ======= PDF RESUMIDO DOS DIAS DO MÊS =======
+if (btnPdfDiasMes) {
+  btnPdfDiasMes.addEventListener("click", () => {
+    const totalHorasMes = calcularDiasDoMes();
+
+    // funcionário
+    let funcionario =
+      (nomeFuncionarioMesEl && nomeFuncionarioMesEl.value.trim()) || "";
+    if (!funcionario) {
+      funcionario =
+        document.getElementById("nome").value.trim() || "________________";
+    }
+
+    // mês de referência
+    let mesRef = mesDiasReferenciaEl ? mesDiasReferenciaEl.value : "";
+    let mesFormatado = "";
+    if (mesRef) {
+      const [ano, mes] = mesRef.split("-");
+      mesFormatado = `${mes}/${ano}`;
+    } else {
+      const mesPrincipal = document.getElementById("mesReferencia").value;
+      if (mesPrincipal) {
+        const [ano, mes] = mesPrincipal.split("-");
+        mesFormatado = `${mes}/${ano}`;
+      }
+    }
+
+    const valorHoraStr = valorHoraMesEl ? valorHoraMesEl.value.trim() : "";
+    const valorHora = parseValorHora(valorHoraStr);
+    let totalPagamentoMes = 0;
+    if (!isNaN(valorHora) && valorHora > 0) {
+      totalPagamentoMes = totalHorasMes * valorHora;
+    }
+
+    // linhas da tabela: um dia por linha
+    let linhasDias = "";
+    for (let idx = 0; idx < diasMesAtual; idx++) {
+      const dia = String(idx + 1).padStart(2, "0");
+      const totalDia =
+        document.getElementById(`totalDiaMes-${idx}`)?.textContent || "0.00";
+
+      linhasDias += `
+        <tr>
+          <td>${dia}</td>
+          <td>${totalDia}</td>
+        </tr>
+      `;
+    }
+
+    if (!linhasDias.trim()) {
+      linhasDias = `
+        <tr>
+          <td colspan="2">Nenhum lançamento de horas para este mês.</td>
+        </tr>
+      `;
+    }
+
+    pdfContainer.innerHTML = `
+      <div id="pdfHeader">
+        <h1>NO JARDIM</h1>
+        <h2>resto bar</h2>
+      </div>
+      <div id="pdfInfo">
+        <span><strong>Funcionário:</strong> ${funcionario}</span>
+        <span><strong>Mês ref.:</strong> ${mesFormatado || "________"}</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Horas trabalhadas</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${linhasDias}
+        </tbody>
+      </table>
+
+      <div id="pdfResumoTotais">
+        <strong>Total mês:</strong>
+        ${formatDecimal(totalHorasMes)} h
+        ${
+          totalPagamentoMes > 0
+            ? ` | Valor: ${moedaBRL.format(totalPagamentoMes)}`
+            : ""
+        }
+      </div>
+    `;
+
+    document.body.classList.add("modo-pdf");
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove("modo-pdf");
+    }, 500);
+  });
+}
+
+// ======= LOADSTATE =======
 function loadState() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return;
@@ -607,9 +894,11 @@ function loadState() {
   calcular();
 }
 
+// salva sempre que mudar algum input
 document.querySelectorAll("input").forEach((inp) => {
   inp.addEventListener("input", () => saveState());
   inp.addEventListener("change", () => saveState());
 });
 
+// carrega estado inicial
 loadState();
