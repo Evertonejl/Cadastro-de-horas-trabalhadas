@@ -50,9 +50,12 @@ body {
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 100px;
 }
-
+.titulos {
+  display: flex;
+  justify-content: space-around;
+}
 .logo-mark {
   width: 34px;
   height: 34px;
@@ -115,6 +118,8 @@ body {
 }
 
 h1 {
+  position: relative;
+  top: 50px;
   font-size: 22px;
   margin: 0 0 8px;
   color: #111827;
@@ -412,7 +417,11 @@ tbody tr:nth-child(even) {
     padding: 14px;
     border-radius: 10px;
   }
-
+  .titulos {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
   .topbar {
     flex-direction: column;
     align-items: center; /* centraliza as logos no mobile */
